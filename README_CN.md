@@ -1,12 +1,11 @@
 -------------
-# 描述 #
+# 描述      #
 -------------
-<li><a href="README.md">English Version</a></li>
-
+<li><a href="README.md">English</a></li>
 将某个pdf的任意页作为水印贴在另一个pdf的任意页上。
 
-# 使用 #
-第一行是使用模板，后面为具体用例。
+# 用法 #
+	第一行是使用模板，后面为具体用例。
 
 	$ python  addmark.py input.pdf output.pdf watermark.pdf (1,n|-1) (1,n|-1)
 	$ python  addmark.py input.pdf output.pdf watermark.pdf 
