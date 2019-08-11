@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 # 
 #    Date: 2019/06/15
-#    Author: Shieber, Henry
+#    Author: Shieber
 #
 #                             APACHE LICENSE
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
