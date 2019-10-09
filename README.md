@@ -1,3 +1,10 @@
+-----------------
+# Compatible OS #
+-----------------
+	Unix
+	Linux
+	Windows
+
 -------------
 # Description #
 -------------
