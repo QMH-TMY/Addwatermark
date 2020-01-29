@@ -3,6 +3,7 @@
 # 
 #    Date: 2019/06/15
 #    Survived: 2019/11/25
+#    Modified: 2020/01/29
 #    Author: Shieber
 #
 #                             APACHE LICENSE
@@ -24,94 +25,138 @@
 import sys
 import PyPDF2
 
-class WaterMark():
+class AddWaterMark():
     '''给pdf加上水印'''
-    def __init__(self,inputfl,outputfl,watermark,pagei,pagew):
-        self.origin = inputfl
-        self.output = outputfl 
-        self.mark   = watermark 
-        self.pageo  = pagei
-        self.pagew  = pagew
+    def __init__(self, argv, pageIpt, pageWmk):
+        self.input  = argv[1]    #原始pdf
+        self.output = argv[2]    #输出pdf
+        self.wtmark = argv[3]    #水印pdf
+        self.pageOg = pageIpt    #要加水印的pdf页码
+        self.pageWm = pageWmk    #水印pdf中水印页码
+        self.deterFileType()
 
-    def getfixedPage(self,filename,page):
-        '''提取pdf指定的某一页内容'''
-        if not filename.endswith('.pdf'):
+    def deterFileType(self):
+        #检测文件是否是Pdf
+        if not self.input.endswith('.pdf'):
+            print("Invalid input file type: must end with .pdf")
             sys.exit(-1)
-
-        pdfObj    = open(filename,'rb')
-        pdfReader = PyPDF2.PdfFileReader(pdfObj)
-        fixedpage = pdfReader.getPage(page)
-        return pdfObj, fixedpage
-
-    def markedPdf(self,markedpage):
-        '''形成最终加了水印的pdf'''
-        pdfObj    = open(self.origin,'rb')
-        pdfReader = PyPDF2.PdfFileReader(pdfObj)
-        if (not 1 <= self.pageo <= pdfReader.numPages) and (self.pageo != -1):
-            pdfObj.close() #若页数不在范围内就关闭文件并退出
-            return None
-
-        pdfWriter = PyPDF2.PdfFileWriter()
-        if self.pageo == 1:
-            #为第一页添加水印的情况
-            pdfWriter.addPage(markedpage)
-            for pageNum in range(1,pdfReader.numPages):
-                pageObj = pdfReader.getPage(pageNum)
-                pdfWriter.addPage(pageObj)
-        elif (self.pageo == -1) or (self.pageo == pdfReader.numPages):
-            #为最后一页添加水印的情况
-            for pageNum in range(pdfReader.numPages-1):
-                pageObj = pdfReader.getPage(pageNum)
-                pdfWriter.addPage(pageObj)
-            pdfWriter.addPage(markedpage)
-        elif 1 < self.pageo < pdfReader.numPages:
-            #为中间某页添加水印的情况
-            for pageNum in range(self.pageo-1):
-                pageObj = pdfReader.getPage(pageNum)
-                pdfWriter.addPage(pageObj)
-            pdfWriter.addPage(markedpage)
-            for pageNum in range(self.pageo,pdfReader.numPages):
-                pageObj = pdfReader.getPage(pageNum)
-                pdfWriter.addPage(pageObj)
+        elif not self.output.endswith('.pdf'):
+            print("Invalid output file type: must end with .pdf")
+            sys.exit(-1)
         else:
             pass
 
-        outputObj = open(self.output,'wb')
-        pdfWriter.write(outputObj)
-        outputObj.close()
-        pdfObj.close() 
+    def getPage(self, flName, pageNum):
+        #提取pdf指定的某一页内容
+        pdfObj = open(flName, 'rb')
+        pdfRdr = PyPDF2.PdfFileReader(pdfObj)
+        pdfPg  = pdfRdr.getPage(pageNum)
+        return pdfObj, pdfPg
 
-    def finalmerge(self):
-        if self.pageo == -1:
-            fixedObj, fixedpage  = self.getfixedPage(self.origin,self.pageo)
+    def markAllPdf(self, wtmkPg):
+        #对所有页添加水印
+        with open(self.input,'rb') as pdfObj1:
+            pdfRdr = PyPDF2.PdfFileReader(pdfObj1)
+            pdfWtr = PyPDF2.PdfFileWriter()
+            for pageNum in range(pdfRdr.numPages):
+                pdfPg = pdfRdr.getPage(pageNum)
+                pdfPg.mergePage(wtmkPg)
+                pdfWtr.addPage(pdfPg)
+
+            with open(self.output,'wb') as pdfObj2:
+                pdfWtr.write(pdfObj2)
+            
+    def markPdf(self,wtmkPg):
+        #对某一页添加水印
+        pageOg = self.pageOg
+        with open(self.input,'rb') as pdfObj:
+            pdfRdr = PyPDF2.PdfFileReader(pdfObj)
+            maxPg  = pdfRdr.numPages
+
+            if (not 1 <= abs(pageOg) <= maxPg):   #判断是否超页
+                print("pdf page number exceeded")
+                sys.exit(-1)
+
+            if pageOg <= 0:
+                pdfObj2, mkdPg = self.getPage(self.input, pageOg)
+            else:
+                pdfObj2, mkdPg = self.getPage(self.input, pageOg - 1)
+            mkdPg.mergePage(wtmkPg)     #得到加过水印的pdf页
+
+            pdfWtr = PyPDF2.PdfFileWriter()
+            if (pageOg == 1) or (pageOg == 0) or (pageOg == -maxPg):
+                pdfWtr.addPage(mkdPg) #为第一页添加水印的情况
+                for pageNum in range(1,maxPg):
+                    pdfPg = pdfRdr.getPage(pageNum)
+                    pdfWtr.addPage(pdfPg)
+            elif 1 < pageOg < maxPg:  
+                for pageNum in range(pageOg-1):
+                    pdfPg = pdfRdr.getPage(pageNum)
+                    pdfWtr.addPage(pdfPg)
+                pdfWtr.addPage(mkdPg) #为中间某页添加水印的情况
+                for pageNum in range(pageOg, maxPg):
+                    pdfPg = pdfRdr.getPage(pageNum)
+                    pdfWtr.addPage(pdfPg)
+            elif -maxPg < pageOg < -1:  
+                for pageNum in range(maxPg + pageOg):
+                    pdfPg = pdfRdr.getPage(pageNum)
+                    pdfWtr.addPage(pdfPg)
+                pdfWtr.addPage(mkdPg) #为中间某页添加水印的情况
+                for pageNum in range(maxPg + pageOg + 1, maxPg):
+                    pdfPg = pdfRdr.getPage(pageNum)
+                    pdfWtr.addPage(pdfPg)
+            elif (pageOg == maxPg) or (pageOg == -1): 
+                for pageNum in range(maxPg - 1):
+                    pdfPg = pdfRdr.getPage(pageNum)
+                    pdfWtr.addPage(pdfPg)
+                pdfWtr.addPage(mkdPg) #为最后一页添加水印的情况
+
+            with open(self.output,'wb') as pdfObj3:
+                pdfWtr.write(pdfObj3)
+                pdfObj2.close()
+
+    def main(self):
+        #1.获取水印页
+        if self.pageWm <= 0:
+            pdfObj, wtmkPg = self.getPage(self.wtmark, self.pageWm)
         else:
-            fixedObj, fixedpage  = self.getfixedPage(self.origin,self.pageo-1)
+            pdfObj, wtmkPg = self.getPage(self.wtmark, self.pageWm-1)
 
-        if self.pagew == -1:
-            markObj,  markpage   = self.getfixedPage(self.mark,self.pagew)
+        #2.给某(或所有)页添加水印
+        if self.pageOg != 'all':
+            self.markPdf(wtmkPg)
         else:
-            markObj,  markpage   = self.getfixedPage(self.mark,self.pagew-1)
+            self.markAllPdf(wtmkPg)
 
-        fixedpage.mergePage(markpage)
-        self.markedPdf(fixedpage)
+        pdfObj.close()
 
-        fixedObj.close()
-        markObj.close()
-
-if __name__ == "__main__":
-    argv = sys.argv
-    if len(argv) == 4:
-        pagei,pagew = 1,1
+def parseParameters(argv):
+    #解析命令行参数
+    if   len(argv) == 4:
+        pagei, pagew = 1, 1
     elif len(argv) == 5:
-        pagei,pagew = int(argv[4]),1
+        if argv[4].replace('-','').isdigit(): 
+            pagei, pagew = int(argv[4]), 1
+        else:
+            pagei, pagew = 'all', 1
     elif len(argv) == 6:
-        pagei,pagew = int(argv[4]),int(argv[5])
+        if argv[4].replace('-','').isdigit(): 
+            pagei, pagew = int(argv[4]), int(argv[5])
+        else:
+            pagei, pagew = 'all', int(argv[5])
     else:
-        print('Usage: python addmark.py file.pdf output.pdf mark.pdf (1,n|-1) (1,n|-1)')
+        print('''Usage: 
+        Addmark input.pdf output.pdf watermark.pdf (1,n|-n,-1|'-a|a') (1,n|-n,-1)
+        [the (1,n|-n,-1|'a')s are optional for controling the the page number
+         on which you want to add watermark; the (1,n|-n,-1) is the page number
+         you select from watermark.pdf to use, respectively. 'a' or '-a' means 'all' pages. 
+         1, n, -n, -1 are the (sequence|reverse) order of page number of pdf files. 
+         if omitted, both are set to 1.]''')
         sys.exit(-1)
 
-    Input  = argv[1]
-    Output = argv[2]
-    Mark_pdf = argv[3]
-    watermark = WaterMark(Input, Output, Mark_pdf, pagei,pagew)
-    watermark.finalmerge()
+    return pagei, pagew 
+
+if __name__ == "__main__":
+    pgi,pgw = parseParameters(sys.argv)
+    addwtmk = AddWaterMark(sys.argv, pgi, pgw)
+    addwtmk.main() 
