@@ -36,6 +36,7 @@ class AddWaterMark():
         self.deterFileType()
 
     def deterFileType(self):
+        #Detect if files' suffix is .pdf 
         #检测文件是否是Pdf
         if not self.input.endswith('.pdf'):
             print("Invalid input file type: must end with .pdf")
@@ -47,6 +48,7 @@ class AddWaterMark():
             pass
 
     def getPage(self, flName, pageNum):
+        #get one pdf page 
         #提取pdf指定的某一页内容
         pdfObj = open(flName, 'rb')
         pdfRdr = PyPDF2.PdfFileReader(pdfObj)
@@ -54,6 +56,7 @@ class AddWaterMark():
         return pdfObj, pdfPg
 
     def markAllPdf(self, wtmkPg):
+        #add watermark onto all pdf pages 
         #对所有页添加水印
         with open(self.input,'rb') as pdfObj1:
             pdfRdr = PyPDF2.PdfFileReader(pdfObj1)
@@ -67,6 +70,7 @@ class AddWaterMark():
                 pdfWtr.write(pdfObj2)
             
     def markPdf(self,wtmkPg):
+        #add watermark onto specified pdf page
         #对某一页添加水印
         pageOg = self.pageOg
         with open(self.input,'rb') as pdfObj:
@@ -81,7 +85,7 @@ class AddWaterMark():
                 pdfObj2, mkdPg = self.getPage(self.input, pageOg)
             else:
                 pdfObj2, mkdPg = self.getPage(self.input, pageOg - 1)
-            mkdPg.mergePage(wtmkPg)     #得到加过水印的pdf页
+            mkdPg.mergePage(wtmkPg)     #得到加了水印的pdf页
 
             pdfWtr = PyPDF2.PdfFileWriter()
             if (pageOg == 1) or (pageOg == 0) or (pageOg == -maxPg):
@@ -116,6 +120,7 @@ class AddWaterMark():
                 pdfObj2.close()
 
     def main(self):
+        #1.get watermark page 
         #1.获取水印页
         if self.pageWm <= 0:
             pdfObj, wtmkPg = self.getPage(self.wtmark, self.pageWm)
