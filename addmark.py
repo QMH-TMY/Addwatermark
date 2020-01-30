@@ -26,7 +26,7 @@ import sys
 import PyPDF2
 
 class AddWaterMark():
-    '''给pdf加上水印'''
+    '''给pdf加水印'''
     def __init__(self, argv, pageIpt, pageWmk):
         self.input  = argv[1]    #原始pdf
         self.output = argv[2]    #输出pdf
@@ -36,7 +36,6 @@ class AddWaterMark():
         self.deterFileType()
 
     def deterFileType(self):
-        #Detect if files' suffix is .pdf 
         #检测文件是否是Pdf
         if not self.input.endswith('.pdf'):
             print("Invalid input file type: must end with .pdf")
@@ -48,7 +47,6 @@ class AddWaterMark():
             pass
 
     def getPage(self, flName, pageNum):
-        #get one pdf page 
         #提取pdf指定的某一页内容
         pdfObj = open(flName, 'rb')
         pdfRdr = PyPDF2.PdfFileReader(pdfObj)
@@ -56,7 +54,6 @@ class AddWaterMark():
         return pdfObj, pdfPg
 
     def markAllPdf(self, wtmkPg):
-        #add watermark onto all pdf pages 
         #对所有页添加水印
         with open(self.input,'rb') as pdfObj1:
             pdfRdr = PyPDF2.PdfFileReader(pdfObj1)
@@ -70,11 +67,10 @@ class AddWaterMark():
                 pdfWtr.write(pdfObj2)
             
     def markPdf(self,wtmkPg):
-        #add watermark onto specified pdf page
         #对某一页添加水印
         pageOg = self.pageOg
-        with open(self.input,'rb') as pdfObj:
-            pdfRdr = PyPDF2.PdfFileReader(pdfObj)
+        with open(self.input,'rb') as pdfObj1:
+            pdfRdr = PyPDF2.PdfFileReader(pdfObj1)
             maxPg  = pdfRdr.numPages
 
             if (not 1 <= abs(pageOg) <= maxPg):   #判断是否超页
@@ -85,6 +81,7 @@ class AddWaterMark():
                 pdfObj2, mkdPg = self.getPage(self.input, pageOg)
             else:
                 pdfObj2, mkdPg = self.getPage(self.input, pageOg - 1)
+
             mkdPg.mergePage(wtmkPg)     #得到加了水印的pdf页
 
             pdfWtr = PyPDF2.PdfFileWriter()
@@ -120,7 +117,6 @@ class AddWaterMark():
                 pdfObj2.close()
 
     def main(self):
-        #1.get watermark page 
         #1.获取水印页
         if self.pageWm <= 0:
             pdfObj, wtmkPg = self.getPage(self.wtmark, self.pageWm)
@@ -151,12 +147,11 @@ def parseParameters(argv):
             pagei, pagew = 'all', int(argv[5])
     else:
         print('''Usage: 
-        Addmark input.pdf output.pdf watermark.pdf (1,n|-n,-1|'-a|a') (1,n|-n,-1)
-        [the (1,n|-n,-1|'a')s are optional for controling the the page number
-         on which you want to add watermark; the (1,n|-n,-1) is the page number
-         you select from watermark.pdf to use, respectively. 'a' or '-a' means 'all' pages. 
-         1, n, -n, -1 are the (sequence|reverse) order of page number of pdf files. 
-         if omitted, both are set to 1.]''')
+        Addmark input.pdf output.pdf watermark.pdf (1,n|-n,-1)|('-a|a|-all') (1,n|-n,-1)
+        [两个(1,n|-n,-1)为控制参数，可选项，分别是原始pdf和水印pdf的页码，默认为1,1。
+         页码可以使用1,n的和-1,-n两种方式，不想数总页数时，-1代表最后一页，依次类推。
+         若第一个控制参数为a, all, -a, -all, --all时，对原始pdf每一页添加水印。
+        ]''')
         sys.exit(-1)
 
     return pagei, pagew 
