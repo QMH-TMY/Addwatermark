@@ -1,50 +1,33 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 # 
-#    Date: 2019/06/15
-#    Survived: 2019/11/25
-#    Modified: 2020/01/29
-#    Author: Shieber
+#Date: 2019/06/15
+#Survived: 2019/11/25
+#Modified: 2020/01/29
+#Author: Shieber
+#Touch a watermark onto any page of a pdf file.
 #
-#                             APACHE LICENSE
-#    Licensed under the Apache License, Version 2.0 (the "License"); you may
-#    not use this file except in compliance with the License. You may obtain
-#    a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-#    Unless required by applicable law or agreed to in writing, software
-#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#    License for the specific language governing permissions and limitations
-#    under the License.
-#
-#                            Function Description
-#    Touch a watermark onto a pdf file on its any page.
-#
-#    Copyright 2019 
-#    All Rights Reserved!
 
 import sys
 import PyPDF2
 
 class AddWaterMark():
-    '''给pdf加水印'''
     def __init__(self, argv, pageIpt, pageWmk):
-        self.input  = argv[1]    #原始pdf
-        self.output = argv[2]    #输出pdf
-        self.wtmark = argv[3]    #水印pdf
-        self.pageOg = pageIpt    #要加水印的pdf页码
-        self.pageWm = pageWmk    #水印pdf中水印页码
-        self.deterFileType()
+        self.input  = argv[1]    #src pdf 原始pdf
+        self.output = argv[2]    #out pdf 输出pdf
+        self.wtmark = argv[3]    #mark pdf 水印pdf
+        self.pageOg = pageIpt    #page to add mark 要加水印的pdf页码
+        self.pageWm = pageWmk    #page of mark pdf 水印pdf中水印页码
+        self.detectFileType()
 
-    def deterFileType(self):
+    def detectFileType(self):
         #检测文件是否是Pdf
         if not self.input.endswith('.pdf'):
             print("Invalid input file type: must end with .pdf")
             sys.exit(-1)
-        elif not self.output.endswith('.pdf'):
+        if not self.output.endswith('.pdf'):
             print("Invalid output file type: must end with .pdf")
             sys.exit(-1)
-        else:
-            pass
 
     def getPage(self, flName, pageNum):
         #提取pdf指定的某一页内容
@@ -116,7 +99,7 @@ class AddWaterMark():
                 pdfWtr.write(pdfObj3)
                 pdfObj2.close()
 
-    def main(self):
+    def add(self):
         #1.获取水印页
         if self.pageWm <= 0:
             pdfObj, wtmkPg = self.getPage(self.wtmark, self.pageWm)
@@ -159,4 +142,4 @@ def parseParameters(argv):
 if __name__ == "__main__":
     pgi,pgw = parseParameters(sys.argv)
     addwtmk = AddWaterMark(sys.argv, pgi, pgw)
-    addwtmk.main() 
+    addwtmk.add() 
