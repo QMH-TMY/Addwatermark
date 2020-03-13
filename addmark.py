@@ -2,22 +2,20 @@
 # -*- coding:utf-8 -*-
 # 
 #Date: 2019/06/15
-#Survived: 2019/11/25
-#Modified: 2020/01/29
+#Modified: 2020/03/13
 #Author: Shieber
 #Touch a watermark onto any page of a pdf file.
-#
 
 import sys
 import PyPDF2
 
 class AddWaterMark():
-    def __init__(self, argv, pageIpt, pageWmk):
+    def __init__(self, argv, page2mk, pageofmk):
         self.input  = argv[1]    #src pdf 原始pdf
         self.output = argv[2]    #out pdf 输出pdf
         self.wtmark = argv[3]    #mark pdf 水印pdf
-        self.pageOg = pageIpt    #page to add mark 要加水印的pdf页码
-        self.pageWm = pageWmk    #page of mark pdf 水印pdf中水印页码
+        self.pageOg = page2mk    #page to add mark 要加水印的pdf页码
+        self.pageWm = pageofmk   #page of mark pdf 水印pdf中水印页码
         self.detectFileType()
 
     def detectFileType(self):
@@ -51,45 +49,44 @@ class AddWaterMark():
             
     def markPdf(self,wtmkPg):
         #对某一页添加水印
-        pageOg = self.pageOg
         with open(self.input,'rb') as pdfObj1:
             pdfRdr = PyPDF2.PdfFileReader(pdfObj1)
             maxPg  = pdfRdr.numPages
 
-            if (not 1 <= abs(pageOg) <= maxPg):   #判断是否超页
+            if (not 1 <= abs(self.pageOg) <= maxPg):   #判断是否超页
                 print("pdf page number exceeded")
                 sys.exit(-1)
 
-            if pageOg <= 0:
-                pdfObj2, mkdPg = self.getPage(self.input, pageOg)
+            if self.pageOg <= 0:
+                pdfObj2, mkdPg = self.getPage(self.input, slef.pageOg)
             else:
-                pdfObj2, mkdPg = self.getPage(self.input, pageOg - 1)
+                pdfObj2, mkdPg = self.getPage(self.input, slef.pageOg - 1)
 
             mkdPg.mergePage(wtmkPg)     #得到加了水印的pdf页
 
             pdfWtr = PyPDF2.PdfFileWriter()
-            if (pageOg == 1) or (pageOg == 0) or (pageOg == -maxPg):
+            if (slef.pageOg == 1) or (slef.pageOg == 0) or (slef.pageOg == -maxPg):
                 pdfWtr.addPage(mkdPg) #为第一页添加水印的情况
                 for pageNum in range(1,maxPg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
-            elif 1 < pageOg < maxPg:  
-                for pageNum in range(pageOg-1):
+            elif 1 < slef.pageOg < maxPg:  
+                for pageNum in range(slef.pageOg-1):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
                 pdfWtr.addPage(mkdPg) #为中间某页添加水印的情况
-                for pageNum in range(pageOg, maxPg):
+                for pageNum in range(slef.pageOg, maxPg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
-            elif -maxPg < pageOg < -1:  
-                for pageNum in range(maxPg + pageOg):
+            elif -maxPg < slef.pageOg < -1:  
+                for pageNum in range(maxPg + slef.pageOg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
                 pdfWtr.addPage(mkdPg) #为中间某页添加水印的情况
-                for pageNum in range(maxPg + pageOg + 1, maxPg):
+                for pageNum in range(maxPg + slef.pageOg + 1, maxPg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
-            elif (pageOg == maxPg) or (pageOg == -1): 
+            elif (slef.pageOg == maxPg) or (slef.pageOg == -1): 
                 for pageNum in range(maxPg - 1):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
@@ -140,6 +137,6 @@ def parseParameters(argv):
     return pagei, pagew 
 
 if __name__ == "__main__":
-    pgi,pgw = parseParameters(sys.argv)
-    addwtmk = AddWaterMark(sys.argv, pgi, pgw)
+    pg2mark,pgofmark = parseParameters(sys.argv)
+    addwtmk = AddWaterMark(sys.argv, pg2mark, pgofmark)
     addwtmk.add() 
