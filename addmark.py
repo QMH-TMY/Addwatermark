@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
 # 
-#Date: 2019/06/15
-#Modified: 2020/03/13
-#Modified: 2020/07/23
-#Author: Shieber
-#Touch a watermark onto any page of a pdf file.
+# Date: 2019/06/15
+# Modified: 2020/03/13
+# Modified: 2020/07/23
+# Author: Shieber
+# Touch a watermark onto any page of a pdf file.
 
 import sys
 import click
