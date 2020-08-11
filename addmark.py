@@ -13,7 +13,7 @@ import sys
 import click
 import PyPDF2
 
-class AddWaterMark():
+class WaterMarkAdder():
     """水印添加类"""
     def __init__(self, ipt, output, wtmark, page2mk, wmkpage):
         self.input   = ipt        #src pdf 输入pdf
@@ -40,19 +40,6 @@ class AddWaterMark():
         pdfPg  = pdfRdr.getPage(pagenumber)
         return pdfobj, pdfPg
 
-    #对所有页添加水印
-    def _mark_all_page(self, wmkpage):
-        with open(self.input,'rb') as pdfobj1:
-            pdfRdr = PyPDF2.PdfFileReader(pdfobj1)
-            pdfWtr = PyPDF2.PdfFileWriter()
-            for pageNum in range(pdfRdr.numPages):
-                pdfPg = pdfRdr.getPage(pageNum)
-                pdfPg.mergePage(wmkpage)
-                pdfWtr.addPage(pdfPg)
-
-            with open(self.output,'wb') as pdfobj2:
-                pdfWtr.write(pdfobj2)
-            
     #对某一页添加水印
     def _mark_page(self,wmkpage):
         with open(self.input,'rb') as pdfobj1:
@@ -108,6 +95,19 @@ class AddWaterMark():
                 pdfWtr.write(pdfobj3)
                 pdfobj2.close()
 
+    #对所有页添加水印
+    def _mark_all_page(self, wmkpage):
+        with open(self.input,'rb') as pdfobj1:
+            pdfRdr = PyPDF2.PdfFileReader(pdfobj1)
+            pdfWtr = PyPDF2.PdfFileWriter()
+            for pageNum in range(pdfRdr.numPages):
+                pdfPg = pdfRdr.getPage(pageNum)
+                pdfPg.mergePage(wmkpage)
+                pdfWtr.addPage(pdfPg)
+
+            with open(self.output,'wb') as pdfobj2:
+                pdfWtr.write(pdfobj2)
+            
     def add_water_mark(self):
         #获取水印页
         if self.wmkpage <= 0:
@@ -157,5 +157,5 @@ def parse_parameters(argvlen, page2mk, wmkpage):
 if __name__ == "__main__":
     ipt, output, wtmark = sys.argv[1:4],
     page2mk, wmkpage = parse_parameters()
-    addwatermark = AddWaterMark(ipt, output, wtmark, page2mk, wmkpage)
-    addwatermark.add_water_mark() 
+    watermarkadder = WaterMarkAdder(ipt, output, wtmark, page2mk, wmkpage)
+    watermarkadder.add_water_mark() 
