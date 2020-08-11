@@ -7,16 +7,18 @@
 # Author: Shieber
 # Touch a watermark onto any page of a pdf file.
 
+#命令行PDF水印添加工具
+
 import sys
 import click
 import PyPDF2
 
 class AddWaterMark():
-    """命令行水印添加"""
+    """水印添加类"""
     def __init__(self, ipt, output, wtmark, page2mk, wmkpage):
         self.input   = ipt        #src pdf 输入pdf
         self.output  = output     #out pdf 输出pdf
-        self.wtmark  = wtmark     #wmmark pdf 水印pdf
+        self.wtmark  = wtmark     #watermark pdf 水印pdf
         self.page2mk = page2mk    #page to add mark 要加水印的pdf页码
         self.wmkpage = wmkpage    #page of mark pdf 水印pdf中水印页码
 
@@ -52,7 +54,7 @@ class AddWaterMark():
                 pdfWtr.write(pdfobj2)
             
     #对某一页添加水印
-    def _mark_pdf(self,wmkpage):
+    def _mark_page(self,wmkpage):
         with open(self.input,'rb') as pdfobj1:
             pdfRdr = PyPDF2.PdfFileReader(pdfobj1)
             maxPg  = pdfRdr.numPages
@@ -106,16 +108,16 @@ class AddWaterMark():
                 pdfWtr.write(pdfobj3)
                 pdfobj2.close()
 
-    def add(self):
-        #1.获取水印页
+    def add_water_mark(self):
+        #获取水印页
         if self.wmkpage <= 0:
             pdfobj, wmkpage = self._get_page(self.wtmark, self.wmkpage)
         else:
             pdfobj, wmkpage = self._get_page(self.wtmark, self.wmkpage-1)
 
-        #2.给某(或所有)页添加水印
+        #给某(所有)页添加水印
         if self.page2mk != 'all':
-            self._mark_pdf(wmkpage)
+            self._mark_page(wmkpage)
         else:
             self._mark_all_page(wmkpage)
 
@@ -156,4 +158,4 @@ if __name__ == "__main__":
     ipt, output, wtmark = sys.argv[1:4],
     page2mk, wmkpage = parse_parameters()
     addwatermark = AddWaterMark(ipt, output, wtmark, page2mk, wmkpage)
-    addwatermark.add() 
+    addwatermark.add_water_mark() 
