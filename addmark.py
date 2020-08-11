@@ -13,15 +13,16 @@ import PyPDF2
 
 class AddWaterMark():
     """命令行水印添加"""
-    def __init__(self, argv, page2mk, wmkpage):
-        self.input  = argv[1]    #src pdf 输入pdf
-        self.output = argv[2]    #out pdf 输出pdf
-        self.wtmark = argv[3]    #wmmark pdf 水印pdf
+    def __init__(self, ipt, output, wtmark, page2mk, wmkpage):
+        self.input   = ipt        #src pdf 输入pdf
+        self.output  = output     #out pdf 输出pdf
+        self.wtmark  = wtmark     #wmmark pdf 水印pdf
         self.page2mk = page2mk    #page to add mark 要加水印的pdf页码
         self.wmkpage = wmkpage    #page of mark pdf 水印pdf中水印页码
+
         self._detect_file_type()
 
-    #检测文件是否是Pdf
+    #检测所有文件是否是Pdf
     def _detect_file_type(self):
         if not self.input.endswith('.pdf'):
             print("Invalid input file type: must end with .pdf")
@@ -56,7 +57,8 @@ class AddWaterMark():
             pdfRdr = PyPDF2.PdfFileReader(pdfobj1)
             maxPg  = pdfRdr.numPages
 
-            if (not 1 <= abs(self.page2mk) <= maxPg):   #判断是否超页
+            #判断是否超页
+            if (not 1 <= abs(self.page2mk) <= maxPg):  
                 print("pdf page number exceeded")
                 sys.exit(-1)
 
@@ -65,11 +67,13 @@ class AddWaterMark():
             else:
                 pdfobj2, mkdPg = self.get_page(self.input, self.page2mk - 1)
 
-            mkdPg.mergePage(wmkpage)     #得到加了水印的pdf页
+            #得到加了水印的pdf页
+            mkdPg.mergePage(wmkpage)
 
             pdfWtr = PyPDF2.PdfFileWriter()
             if (self.page2mk == 1) or (self.page2mk == 0) or (self.page2mk == -maxPg):
-                pdfWtr.addPage(mkdPg) #为第一页添加水印的情况
+                #为第一页添加水印的情况
+                pdfWtr.addPage(mkdPg) 
                 for pageNum in range(1,maxPg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
@@ -77,7 +81,8 @@ class AddWaterMark():
                 for pageNum in range(self.page2mk-1):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
-                pdfWtr.addPage(mkdPg) #为中间某页添加水印的情况
+                #为中间某页添加水印的情况1，页参数为正
+                pdfWtr.addPage(mkdPg)
                 for pageNum in range(self.page2mk, maxPg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
@@ -85,7 +90,8 @@ class AddWaterMark():
                 for pageNum in range(maxPg + self.page2mk):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
-                pdfWtr.addPage(mkdPg) #为中间某页添加水印的情况
+                #为中间某页添加水印的情况2，页参数为负
+                pdfWtr.addPage(mkdPg)
                 for pageNum in range(maxPg + self.page2mk + 1, maxPg):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
@@ -93,7 +99,8 @@ class AddWaterMark():
                 for pageNum in range(maxPg - 1):
                     pdfPg = pdfRdr.getPage(pageNum)
                     pdfWtr.addPage(pdfPg)
-                pdfWtr.addPage(mkdPg) #为最后一页添加水印的情况
+                #为最后一页添加水印的情况
+                pdfWtr.addPage(mkdPg) 
 
             with open(self.output,'wb') as pdfobj3:
                 pdfWtr.write(pdfobj3)
@@ -114,19 +121,20 @@ class AddWaterMark():
 
         pdfobj.close()
 
+#设定参数
 @click.command()
+@click.option('--argvlen', default=len(sys.argv), help='the number of parameters')
 @click.option('--page2mk', default='1', help='pdf page number onto which add a watermark')
 @click.option('--wmkpage', default='1', help='watermark page number you want to use')
-def parse_parameters(page2mk, wmkpage):
+def parse_parameters(argvlen, page2mk, wmkpage):
     """
        Usage:\n
-       Addmark input.pdf output.pdf watermark.pdf [page2mk] [wmkpage]
-       page2mk和wmkpage为input.pdf和watermark.pdf的页码，默认为1，1。
-       可以使用1,n和-1,-n两种方式指代页码，-1代表最后一页
-       若page2mk为a, all, -a, -all, --all，则对pdf每一页添加wmkpage指定页的水印。
+       addmark input.pdf output.pdf watermark.pdf [page2mk] [wmkpage]
+       page2mk: default 1
+       wmkpage: default 1
+       page2mk: [a, all, -a, -all, --all] add watermark onto every page.
      """
 
-    argvlen = len(sys.argv)
     if argvlen == 4:
         pagewmk, wmkpage = int(page2mk), int(wmkpage)
     elif argvlen == 5:
@@ -145,6 +153,7 @@ def parse_parameters(page2mk, wmkpage):
     return page2mk, wmkpage
 
 if __name__ == "__main__":
+    ipt, output, wtmark = sys.argv[1:4],
     page2mk, wmkpage = parse_parameters()
-    addwtmk = AddWaterMark(sys.argv, page2mk, wmkpage)
-    addwtmk.add() 
+    addwatermark = AddWaterMark(ipt, output, wtmark, page2mk, wmkpage)
+    addwatermark.add() 
